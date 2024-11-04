@@ -3,7 +3,7 @@
 import { ColumnDef } from "@tanstack/react-table";
 import { MoreHorizontal } from "lucide-react";
 
-type Menu = {
+export type Menu = {
   id: number;
   name: string;
   description: string;
