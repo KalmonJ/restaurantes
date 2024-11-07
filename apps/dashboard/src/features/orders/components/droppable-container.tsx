@@ -23,16 +23,39 @@ import {
   FormLabel,
   FormMessage,
 } from "@acme/ui/components/form";
+import { RadioGroup, RadioGroupItem } from "@acme/ui/components/radio-group";
 import { useForm } from "react-hook-form";
 import { Input } from "@acme/ui/components/input";
+import { z } from "zod";
+import { zodResolver } from "@hookform/resolvers/zod";
 
 type DroppableContainerProps = HTMLAttributes<HTMLDivElement> & {
   id: string;
 };
 
+const formSchema = z.object({
+  tableNumber: z.string({ message: "Numero da mesa é obrigatório" }),
+  customerName: z.string({ message: "Nome do cliente é obrigatório" }),
+  orderType: z.enum(["delivery", "in_person"], {
+    message: "Selecione uma opção válida",
+  }),
+  orderProducts: z.array(z.number()),
+});
+
+type FormValues = z.infer<typeof formSchema>;
+
 export const DroppableContainer = (props: DroppableContainerProps) => {
   const { setNodeRef } = useDroppable({ id: props.id });
-  const form = useForm({});
+
+  const form = useForm<FormValues>({
+    resolver: zodResolver(formSchema),
+    criteriaMode: "all",
+    mode: "all",
+  });
+
+  const handleSubmit = (values: FormValues) => {
+    console.log(values);
+  };
 
   return (
     <div
@@ -44,7 +67,7 @@ export const DroppableContainer = (props: DroppableContainerProps) => {
           {CONTAINER_MAPPER[props.id as keyof typeof CONTAINER_MAPPER]}
         </h3>
         <Dialog>
-          <DialogTrigger>
+          <DialogTrigger asChild>
             <Button>
               <Plus />
             </Button>
@@ -57,54 +80,70 @@ export const DroppableContainer = (props: DroppableContainerProps) => {
               </DialogDescription>
             </DialogHeader>
             <Form {...form}>
-              <form className="flex flex-col gap-4">
+              <form
+                onSubmit={form.handleSubmit(handleSubmit)}
+                className="flex flex-col gap-4"
+              >
                 <FormField
-                  name="table_number"
+                  name="tableNumber"
                   control={form.control}
-                  render={({}) => (
+                  render={({ field }) => (
                     <FormItem>
                       <FormLabel>Numero da mesa (opcional)</FormLabel>
                       <FormControl>
-                        <Input placeholder="44" />
+                        <Input {...field} placeholder="44" />
                       </FormControl>
                       <FormMessage />
                     </FormItem>
                   )}
                 />
                 <FormField
-                  name="customer_name"
+                  name="customerName"
                   control={form.control}
-                  render={({}) => (
+                  render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Nome do cliente</FormLabel>
+                      <FormLabel>Nome do cliente*</FormLabel>
                       <FormControl>
-                        <Input placeholder="Jhon doe" />
+                        <Input {...field} placeholder="Jhon doe" />
                       </FormControl>
                       <FormMessage />
                     </FormItem>
                   )}
                 />
                 <FormField
-                  name="order"
+                  name="orderType"
                   control={form.control}
-                  render={({}) => (
+                  render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Selecione o produto</FormLabel>
+                      <FormLabel>Tipo do pedido</FormLabel>
                       <FormControl>
-                        <Input placeholder="Jhon doe" />
+                        <RadioGroup {...field}>
+                          <FormItem className="flex items-center gap-3">
+                            <FormControl>
+                              <RadioGroupItem value="delivery" />
+                            </FormControl>
+                            <FormLabel>Entrega</FormLabel>
+                          </FormItem>
+                          <FormItem className="flex items-center gap-3">
+                            <FormControl>
+                              <RadioGroupItem value="in_person" />
+                            </FormControl>
+                            <FormLabel>Presencial</FormLabel>
+                          </FormItem>
+                        </RadioGroup>
                       </FormControl>
                       <FormMessage />
                     </FormItem>
                   )}
                 />
+                <DialogFooter>
+                  <DialogClose asChild>
+                    <Button variant="secondary">Cancelar</Button>
+                  </DialogClose>
+                  <Button>Adicionar</Button>
+                </DialogFooter>
               </form>
             </Form>
-            <DialogFooter>
-              <DialogClose>
-                <Button variant="secondary">Cancelar</Button>
-              </DialogClose>
-              <Button>Adicionar</Button>
-            </DialogFooter>
           </DialogContent>
         </Dialog>
       </div>
