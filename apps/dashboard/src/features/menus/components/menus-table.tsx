@@ -1,5 +1,3 @@
-"use client";
-
 import { DataTablePagination } from "@acme/ui/data-table/data-table-pagination";
 import {
   DataTable,
@@ -12,14 +10,15 @@ import {
 import { columns, data } from "./columns";
 import { Button } from "@acme/ui/components/button";
 import { Plus } from "lucide-react";
-import { useRouter } from "next/navigation";
+import { redirect } from "next/navigation";
 
 export const MenusTable = () => {
-  const router = useRouter();
-
   return (
     <DataTable
-      rowAction={(data) => router.push(`/cardapios/${data.id}`)}
+      rowAction={async (data) => {
+        "use server";
+        redirect(`/cardapios/${data.id}`);
+      }}
       columns={columns}
       data={data}
     >
